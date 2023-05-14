@@ -1,10 +1,13 @@
 import app from "../firebase/firebase.config";
 import React, { createContext, useEffect, useState } from "react";
 import {
+  GithubAuthProvider,
+  GoogleAuthProvider,
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
 } from "firebase/auth";
 
@@ -15,6 +18,9 @@ const AuthProviders = ({ children }) => {
   const [user, setUsers] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const googleProvider = new GoogleAuthProvider();
+  const githubProvider = new GithubAuthProvider();
+
   const createUser = (email, password) => {
     setLoading(true);
     return createUserWithEmailAndPassword(auth, email, password);
@@ -23,6 +29,16 @@ const AuthProviders = ({ children }) => {
   const loginUser = (email, password) => {
     setLoading(true);
     return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const googleSignIn = () => {
+    setLoading(true);
+    return signInWithPopup(auth, googleProvider);
+  };
+
+  const githubSignIn = () => {
+    setLoading(true);
+    return signInWithPopup(auth, githubProvider);
   };
 
   const logOut = () => {
@@ -35,6 +51,27 @@ const AuthProviders = ({ children }) => {
       setUsers(currenUser);
       setLoading(false);
       // console.log("currenUser", currenUser);
+
+      if (currenUser && currenUser.email) {
+        const loggedUser = {
+          email: currenUser.email,
+        };
+
+        fetch("http://localhost:5000/jwt", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(loggedUser),
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log("JWT Token", data);
+            localStorage.setItem("Car-access-token", data.token);
+          });
+      } else {
+        localStorage.removeItem("Car-access-token");
+      }
     });
     return () => {
       return unsubscribe();
@@ -46,6 +83,8 @@ const AuthProviders = ({ children }) => {
     loading,
     createUser,
     loginUser,
+    googleSignIn,
+    githubSignIn,
     logOut,
   };
 

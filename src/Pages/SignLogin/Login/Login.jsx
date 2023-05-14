@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import image from "../../../assets/images/login/login.svg";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../../Providers/AuthProviders";
+import SocialLogin from "../../Shared/SocialLogin/SocialLogin";
 
 const Login = () => {
   const { loginUser } = useContext(AuthContext);
@@ -18,9 +19,10 @@ const Login = () => {
 
     loginUser(email, password)
       .then(result => {
-        const loggedUser = result.user;
+        const user = result.user;
+
+        console.log(user);
         navigate(from, { replace: true });
-        console.log(loggedUser);
       })
       .catch(error => {
         const errorMessage = error.message;
@@ -77,6 +79,7 @@ const Login = () => {
                   Sign In
                 </Link>
               </label>
+              <SocialLogin />
             </form>
           </div>
         </div>
